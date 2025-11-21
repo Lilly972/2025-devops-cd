@@ -45,7 +45,7 @@ jobs:
       - name: build-doc
         run: mvn javadoc:javadoc
       - name: install-node
-        run: apt update && apt install nodejs npm
+        run: sudo apt update && sudo apt install nodejs npm
       - name: install-netlify
         run: npm install -g netlify-cli
       - name: deploy-doc-on-netlify
