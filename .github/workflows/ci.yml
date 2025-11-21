@@ -34,8 +34,7 @@ jobs:
 
 
   doc-on-netlify:
-    rules:
-      - if: branch == 'main'
+    if: branch == 'main'
     runs-on: ubuntu-latest
     steps: 
       - name: checkout-code
