@@ -3,11 +3,9 @@ name: Java CLI with mvnw - devops tp3
 
 #declencheurs 
 on: 
-  push: 
-    branches: main
-  pull_request: 
-    branches: main
-  workflow_dispatch: 
+  push
+  pull_request
+  workflow_dispatch
   
 #variables globales SI il y en a
 
@@ -30,9 +28,14 @@ jobs:
       - name: run unit-tests 
         run: ./mvnw test
 
-  #peut etre faire les test de documentation avant de push la doc sur netlifyu 
+  #faire les test de documentation dans le job de tests
+  #faire les tests 
+
+
 
   doc-on-netlify:
+    rules:
+      - if: branch == 'main'
     runs-on: ubuntu-latest
     steps: 
       - name: checkout-code
