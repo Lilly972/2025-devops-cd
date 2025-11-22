@@ -29,6 +29,7 @@ jobs:
         run: ./mvnw test
 
   check-image-build: 
+    runs-on: ubuntu-latest
     steps: 
       - name: test building the app 
       - run: docker build -t tp3-java:test .
