@@ -32,10 +32,7 @@ jobs:
     runs-on: ubuntu-latest
     steps: 
       - name: test building the app 
-      - run: docker build -t tp3-java:test .
-
-  #faire les test de documentation dans le job de tests
-  #faire les tests 
+        run: docker build -t tp3-java:test .
 
 
 
