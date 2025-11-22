@@ -44,7 +44,7 @@ jobs:
       - name: setup java
         uses: actions/setup-java@v5
         with: 
-          distirbution: 'temurin'
+          distribution: 'temurin'
           java-version: '21'
       - name: test build doc
         run: mvn javadoc:javadoc
