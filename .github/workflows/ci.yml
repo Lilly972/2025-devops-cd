@@ -31,6 +31,8 @@ jobs:
   check-image-build: 
     runs-on: ubuntu-latest
     steps: 
+      - name: get code 
+        uses: actions/checkout@v4
       - name: test building the app 
         run: docker build -t tp3-java:test .
 
