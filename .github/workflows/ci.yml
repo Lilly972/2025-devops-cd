@@ -34,7 +34,7 @@ jobs:
 
 
   doc-on-netlify:
-    if: branch == 'main'
+    if: github.refs == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps: 
       - name: checkout-code
