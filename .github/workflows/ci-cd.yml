@@ -1,0 +1,96 @@
+name: CI/CD Pipeline Java App
+
+# Se déclenche sur tout push, sur n'importe quelle branche
+on:
+  push:
+    branches:
+      - '**' 
+
+jobs:
+  # --- 1. JOBS DE VÉRIFICATION (sur toutes les branches) ---
+  
+  test-unit:
+    name: 🧪 Run Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+      - name: Run Tests
+        run: ./mvnw test
+
+  check-docker-build:
+    name: 🐳 Check Docker Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Docker Image (verification only)
+        # Vérifie que le Dockerfile est correct sans pousser l'image
+        run: docker build -t check-build . 
+
+  check-javadoc-build:
+    name: 📝 Check Documentation Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      - name: Build Javadoc
+        run: ./mvnw javadoc:javadoc
+
+  # --- 2. JOB DE DÉPLOIEMENT (uniquement sur la branche main) ---
+
+  deploy-full:
+    name: 🚀 Full Deployment (main)
+    # Démarre seulement si les 3 étapes précédentes ont réussi
+    needs: [test-unit, check-docker-build, check-javadoc-build]
+    # Condition: uniquement si le push est sur la branche 'main'
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      # A. BUILD ET PUSH VERS DOCKER HUB
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          # On utilise le secret DOCKER_USERNAME pour générer le tag de l'image
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      
+      - name: Build and Push Docker Image to Docker Hub
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: lilly935/mon-app-devops:main # Remplacer lilly935 par ${{ secrets.DOCKER_USERNAME }} si besoin
+
+      # B. DÉPLOIEMENT DE LA DOCUMENTATION VERS NETLIFY
+      - name: Set up JDK 21 for Doc build
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Generate Javadoc for Netlify
+        run: ./mvnw javadoc:javadoc
+      
+      - name: Install Netlify CLI
+        run: npm install -g netlify-cli
+        
+      - name: Deploy Documentation to Netlify (Production)
+        # Utilise l'argument -prod et les secrets pour l'authentification
+        run: netlify deploy --prod --dir=target/reports/apidocs --site ${{ secrets.NETLIFY_SITE_ID }} --auth ${{ secrets.NETLIFY_AUTH_TOKEN }}
+
+      # C. DÉCLENCHEMENT DU DÉPLOIEMENT RENDER
+      - name: Trigger Render Deployment Hook
+        # Un appel CURL indique à Render de prendre la nouvelle image Docker (qui vient d'être poussée)
+        run: curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
