@@ -1,3 +1,7 @@
+[![CI/CD Pipeline Java App](https://github.com/Lilly972/2025-devops-cd/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/Lilly972/2025-devops-cd/actions/workflows/ci-cd.yml) 
+
+
+
 # Hello!! This is a spring boot app!
 
 This app is simple. It connects to a postgres database and says if the database works.
